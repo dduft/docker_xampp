@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+    nginx:
+        build: ./nginx/
+        ports:
+            - 8080:80
+        links:
+            - php
+        volumes:
+            - ./logs/nginx:/var/log/nginx/
+        volumes_from:
+            - php
+        networks:
+            - xampp
+
+    php:
+        build: ./php/
+        expose:
+            - 9000
+        links:
+            - mysql
+        volumes:
+            - ./sites:/var/www/html
+            - ./logs/php:/var/log/php/
+        networks:
+            - xampp
+
+    mysql:
+        build: ./mysql/
+        volumes:
+            - mysql-data:/var/lib/mysql 
+            - ./logs/mysql:/var/log/mysql               
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: project
+            MYSQL_USER: project
+            MYSQL_PASSWORD: secret
+        networks:
+            - xampp
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - 8081:80
+        links:
+            - mysql
+        environment:
+            PMA_HOST: mysql
+        networks:
+            - xampp           
+            
+volumes:
+    mysql-data:
+networks:
+  xampp:
+    driver: bridge
